@@ -26,7 +26,7 @@ func main() {
 	//注册中心
 	consul := consul.NewRegistry(func(options *registry.Options) {
 		options.Addrs = []string{
-			"127.0.0.0:8500",
+			"127.0.0.1:8500",
 		}
 	})
 
@@ -41,7 +41,7 @@ func main() {
 	//mysql 设置
 	mysqlInfo := common.GetMysqlFromConsul(consulConfig, "mysql")
 	//初始化数据库
-	db, err := gorm.Open("mysql", mysqlInfo.User+":"+mysqlInfo.Password+"@/"+mysqlInfo.Database+"?charset=utf8&parseTime=True&loc=Local")
+	db, err := gorm.Open("mysql", mysqlInfo.User+":"+mysqlInfo.Password+"@tcp"+"("+mysqlInfo.Host+")/"+mysqlInfo.Database+"?charset=utf8mb4&parseTime=True&loc=Local")
 	if err != nil {
 		common.Error(err)
 	}
@@ -50,15 +50,15 @@ func main() {
 	db.SingularTable(true)
 
 	//创建表
-	tableInit := repository.NewPaymentRepository(db)
-	tableInit.InitTable()
+	//tableInit := repository.NewPaymentRepository(db)
+	//tableInit.InitTable()
 
 	//监控
 	common.PrometheusBoot(9089)
 
 	// Create service
 	srv := micro.NewService(
-		micro.Name("payment"),
+		micro.Name("go.micro.service.payment"),
 		micro.Version("latest"),
 		micro.Address("0.0.0.0:8089"),
 		//注册中心

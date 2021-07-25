@@ -15,14 +15,13 @@ import (
 	service2 "github.com/wenyunji/payment/domain/service"
 	"github.com/wenyunji/payment/handler"
 	"github.com/wenyunji/payment/proto/payment"
-	"log"
 )
 
 func main() {
 	//配置中心
 	consulConfig, err := common.GetConsulConfig("127.0.0.1", 8500, "micro/config")
 	if err != nil {
-		log.Fatal(err)
+		common.Error(err)
 	}
 	//注册中心
 	consul := consul.NewRegistry(func(options *registry.Options) {
@@ -34,7 +33,7 @@ func main() {
 	//jaeger 链路追踪
 	t, io, err := common.NewTracer("go.micro.service.payment", "localhost:6831")
 	if err != err {
-		log.Fatal(err)
+		common.Error(err)
 	}
 	defer io.Close()
 	opentracing.SetGlobalTracer(t)
@@ -44,7 +43,7 @@ func main() {
 	//初始化数据库
 	db, err := gorm.Open("mysql", mysqlInfo.User+":"+mysqlInfo.Password+"@/"+mysqlInfo.Database+"?charset=utf8&parseTime=True&loc=Local")
 	if err != nil {
-		log.Fatal(err)
+		common.Error(err)
 	}
 	defer db.Close()
 	//禁止复数表
@@ -78,6 +77,6 @@ func main() {
 
 	// Run service
 	if err := srv.Run(); err != nil {
-		log.Fatal(err)
+		common.Error(err)
 	}
 }
